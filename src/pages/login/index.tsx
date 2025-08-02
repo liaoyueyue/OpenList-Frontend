@@ -43,7 +43,9 @@ const Login = () => {
   const logo = useColorModeValue(logos[0], logos.pop())
   const t = useT()
   const title = createMemo(() => {
-    return `${t("login.login_to")} ${getSetting("site_title")}`
+    // 隐藏 ‘登录到’
+    // return `${t("login.login_to")} ${getSetting("site_title")}`
+    return `${getSetting("site_title")}`
   })
   useTitle(title)
   const bgColor = useColorModeValue("white", "$neutral1")
@@ -108,7 +110,6 @@ const Login = () => {
       PublicKeyCredential &&
       "isConditionalMediationAvailable" in PublicKeyCredential
     ) {
-      // @ts-expect-error
       return await PublicKeyCredential.isConditionalMediationAvailable()
     } else {
       return false
@@ -144,7 +145,6 @@ const Login = () => {
         const options = parseRequestOptionsFromJSON(data.options)
         options.signal = controller.signal
         if (conditional) {
-          // @ts-expect-error
           options.mediation = "conditional"
         }
         const credentials = await get(options)
@@ -290,30 +290,51 @@ const Login = () => {
             >
               {t("login.remember")}
             </Checkbox>
-            <Text as="a" target="_blank" href={t("login.forget_url")}>
-              {t("login.forget")}
-            </Text>
+            {
+              //隐藏忘记密码按钮
+              /*               <Text as="a" target="_blank" href={t("login.forget_url")}>
+                {t("login.forget")}
+              </Text> */
+            }
           </Flex>
         </Show>
         <HStack w="$full" spacing="$2">
-          <Show when={!useauthn()}>
-            <Button
-              colorScheme="primary"
-              w="$full"
-              onClick={() => {
-                if (needOpt()) {
-                  setOpt("")
-                } else {
-                  setUsername("")
-                  setPassword("")
-                }
-              }}
-            >
-              {t("login.clear")}
-            </Button>
-          </Show>
+          {
+            //隐藏以游客身份登录按钮
+            /*
+            <Show when={!useauthn()}>
+              <Button
+                colorScheme="primary"
+                w="$full"
+                onClick={() => {
+                  if (needOpt()) {
+                    setOpt("")
+                  } else {
+                    setUsername("")
+                    setPassword("")
+                  }
+                }}
+              >
+                {t("login.clear")}
+              </Button>
+            </Show>
+            */
+          }
           <Button w="$full" loading={loading()} onClick={Login}>
             {t("login.login")}
+          </Button>
+          <Button
+            w="$full"
+            colorScheme="accent"
+            onClick={() => {
+              changeToken()
+              to(
+                decodeURIComponent(searchParams.redirect || base_path || "/"),
+                true,
+              )
+            }}
+          >
+            {t("login.use_guest")}
           </Button>
         </HStack>
         <Show when={ldapLoginEnabled}>
@@ -325,19 +346,6 @@ const Login = () => {
             {ldapLoginTips}
           </Checkbox>
         </Show>
-        <Button
-          w="$full"
-          colorScheme="accent"
-          onClick={() => {
-            changeToken()
-            to(
-              decodeURIComponent(searchParams.redirect || base_path || "/"),
-              true,
-            )
-          }}
-        >
-          {t("login.use_guest")}
-        </Button>
         <Flex
           mt="$2"
           justifyContent="space-evenly"
